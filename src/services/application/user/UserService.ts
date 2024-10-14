@@ -7,7 +7,6 @@ import {logger} from "../../../utils/container/container";
 import {TwitSnapAPIs} from "../../../api/external/TwitSnapAPIs";
 import {Helpers} from "../../../utils/helpers";
 import {JWT_NEW_PASSWORD, JWT_NEW_PASSWORD_EXPIRATION_TIME,} from "../../../utils/config";
-import {InvalidCredentialsError} from "../errors/InvalidCredentialsError";
 import {InvalidCredentialsFormat} from "../errors/InvalidCredentialsFormat";
 import {InvalidTokenError} from "jwt-decode";
 import {UserNotFoundError} from "../errors/UserNotFoundError";
@@ -108,7 +107,10 @@ export class UserService {
      * @return True if the token is valid, false otherwise.
      */
     public async resetPasswordTokenIsValid(token: string): Promise<boolean> {
-        return Helpers.tokenIsValid(token, JWT_NEW_PASSWORD as string);
+        logger.logDebugFromEntity("Received request to check if password reset token " + token + " is valid.", this.constructor);
+        const isValid = await Helpers.tokenIsValid(token, JWT_NEW_PASSWORD as string);
+        logger.logDebugFromEntity("Password reset token " + token + " is " + (isValid ? "valid" : "invalid"), this.constructor);
+        return isValid;
     }
 
     /**
@@ -121,7 +123,7 @@ export class UserService {
         logger.logDebugFromEntity("Received request to update password with token: " + token + ".", this.constructor);
 
         if (!await this.resetPasswordTokenIsValid(token)) throw new InvalidTokenError("Password reset token has expired.");
-        const userId = Helpers.getDataFromToken(token, "userId", JWT_NEW_PASSWORD as string);
+        const userId = await Helpers.getDataFromToken(token, "userId", JWT_NEW_PASSWORD as string);
 
         return this.updatePassword(userId, password);
     }

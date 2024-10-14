@@ -60,17 +60,13 @@ export class Helpers {
      * @param secret The secret key used to sign the token.
      * @returns True if the token is valid, false otherwise.
      */
-    public static tokenIsValid = (token: string, secret: string): boolean => {
-        try {
-            const decodedToken = jwt.verify(token, secret);
-
-            if (typeof decodedToken === "string") return true;
-
-            const currentTime = Math.floor(Date.now() / 1000);
-            return decodedToken.exp ? decodedToken.exp < currentTime : true;
-        } catch (e) {
-            return true;
-        }
+    public static tokenIsValid = (token: string, secret: string): Promise<boolean> => {
+        return new Promise((resolve) => {
+            jwt.verify(token, secret, (err) => {
+                if (err) return resolve(false);
+                return resolve(true);
+            });
+        });
     }
 
     /**
@@ -81,11 +77,15 @@ export class Helpers {
      * @param secret The secret key used to sign the token.
      * @returns The data from the token.
      */
-    public static getDataFromToken = (token: string, key: string, secret: string): any => {
-        const decodedToken = jwt.verify(token, secret);
-        if (typeof decodedToken === "string") throw new InvalidTokenError();
+    public static getDataFromToken = (token: string, key: string, secret: string): Promise<any> => {
+        return new Promise((resolve, reject) => {
+            jwt.verify(token, secret, (err, decoded) => {
+                if (err) return reject(new InvalidTokenError());
+                if (typeof decoded === "string" || typeof decoded === "undefined" || decoded === null) return reject(new InvalidTokenError());
 
-        return decodedToken[key];
+                resolve(decoded[key]);
+            });
+        });
     }
 
     /**
@@ -124,7 +124,6 @@ export class Helpers {
         Helpers._errorStatusCodeMap.set(ExternalServiceInternalError, StatusCodes.INTERNAL_SERVER_ERROR)
         Helpers._errorStatusCodeMap.set(ExternalServiceHTTPError, StatusCodes.INTERNAL_SERVER_ERROR);
         Helpers._errorStatusCodeMap.set(BadRequestError, StatusCodes.BAD_REQUEST);
-
 
         Helpers._errorStatusCodeMap.set(InvalidRegisterCredentialsError, StatusCodes.CONFLICT);
         Helpers._errorStatusCodeMap.set(InvalidCredentialsFormat, StatusCodes.CONFLICT);

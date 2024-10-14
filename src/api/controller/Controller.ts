@@ -66,6 +66,6 @@ export abstract class Controller {
      */
     protected getParamOrBadRequestError = <T>(req: any, param: string): T => {
         if(!req.params[param]) throw new BadRequestError(`Parameter ${param} is required`);
-        return req.body[param];
+        return req.params[param];
     }
 }

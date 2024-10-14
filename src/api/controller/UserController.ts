@@ -4,6 +4,7 @@ import {NextFunction, Request, Response} from "express";
 import {UserService} from "../../services/application/user/UserService";
 import {SessionService} from "../../services/application/session/SessionService";
 import {injectable} from "tsyringe";
+import {User} from "../../services/domain/User";
 
 @injectable()
 export class UserController extends Controller {
@@ -63,7 +64,8 @@ export class UserController extends Controller {
      */
     public authenticate = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            return this.okResponse(res, {userId: req.params.id});
+            const user = req.user as User;
+            return this.okResponse(res, {userId: user.getId()});
         } catch (error) {
             next(error);
         }
@@ -96,7 +98,7 @@ export class UserController extends Controller {
     public resetPasswordTokenIsValid = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const token = this.getParamOrBadRequestError(req, 'token') as string;
-            const isValid = this.userService.resetPasswordTokenIsValid(token);
+            const isValid = await this.userService.resetPasswordTokenIsValid(token);
 
             return this.okResponse(res, {isValid: isValid});
         } catch (error) {
