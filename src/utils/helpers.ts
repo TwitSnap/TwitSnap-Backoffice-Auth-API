@@ -37,7 +37,6 @@ export class Helpers {
      * @param envVar - The name of the environment variable to validate.
      */
     public static validateEnvVar = (envVar: string): void => {
-        console.log(process.env[envVar]);
         if (!process.env[envVar]) throw new MissingEnvVarError(`Environment variable ${envVar} is missing`);
     }
 

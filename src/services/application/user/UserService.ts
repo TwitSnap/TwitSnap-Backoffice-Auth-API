@@ -56,6 +56,7 @@ export class UserService {
 
     private async validateRegisterData(email: string, password: string):Promise<void> {
         if (await this.emailIsUsed(email)) throw new InvalidRegisterCredentialsError("Email is already being used.");
+        this.validateEmail(email);
         this.validatePassword(password);
     }
 
@@ -162,5 +163,24 @@ export class UserService {
      */
     private validatePassword(password: string): void {
         if (password.length < PASSWORD_MIN_LENGTH) throw new InvalidCredentialsFormat("Password must be at least 8 characters long.");
+    }
+
+    /**
+     * Validates the email format.
+     * @param email The email to validate.
+     * @throws InvalidCredentialsFormat if the email is invalid.
+     */
+    private validateEmail = (email: string): void => {
+        if (!this.isValidEmail(email)) throw new InvalidCredentialsFormat("Invalid email.");
+    }
+
+    /**
+     * Checks if the given string is a valid email.
+     * @param email The string to check.
+     * @returns True if the string is a valid email, false otherwise.
+     */
+    private isValidEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
     }
 }
