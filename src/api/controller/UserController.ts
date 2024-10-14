@@ -28,8 +28,9 @@ export class UserController extends Controller {
         try {
             const email = this.getFieldOrBadRequestError(req, 'email') as string;
             const password = this.getFieldOrBadRequestError(req, 'password') as string;
+            const token = this.getFieldOrBadRequestError(req, 'token') as string;
 
-            await this.userService.register(email, password);
+            await this.userService.register(email, password, token);
             return this.createdResponse(res, {message: 'User registered successfully.'});
         } catch (error) {
             next(error);
@@ -118,6 +119,17 @@ export class UserController extends Controller {
             const token = this.getFieldOrBadRequestError(req, 'token') as string;
             const newPassword = this.getFieldOrBadRequestError(req, 'newPassword') as string;
             await this.userService.updatePasswordWithToken(token, newPassword);
+
+            return this.okNoContentResponse(res);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public inviteUser = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const email = this.getFieldOrBadRequestError(req, 'email') as string;
+            await this.userService.inviteUser(email);
 
             return this.okNoContentResponse(res);
         } catch (error) {

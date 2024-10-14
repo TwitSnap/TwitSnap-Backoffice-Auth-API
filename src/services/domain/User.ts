@@ -12,6 +12,9 @@ export class User {
     @Column({ type: "varchar", nullable: false })
     private readonly password: string;
 
+    @Column({ type: "boolean", nullable: false })
+    private isEmailVerified: boolean;
+
     constructor(email: string, password: string) {
         this.email = email;
         this.password = password;

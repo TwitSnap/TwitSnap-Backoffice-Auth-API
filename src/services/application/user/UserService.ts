@@ -6,7 +6,7 @@ import {InvalidRegisterCredentialsError} from "../errors/InvalidRegisterCredenti
 import {logger} from "../../../utils/container/container";
 import {TwitSnapAPIs} from "../../../api/external/TwitSnapAPIs";
 import {Helpers} from "../../../utils/helpers";
-import {JWT_NEW_PASSWORD, JWT_NEW_PASSWORD_EXPIRATION_TIME,} from "../../../utils/config";
+import {JWT_NEW_PASSWORD, JWT_NEW_PASSWORD_EXPIRATION_TIME, JWT_INVITATION_SECRET, JWT_INVITATION_EXPIRATION_TIME} from "../../../utils/config";
 import {InvalidCredentialsFormat} from "../errors/InvalidCredentialsFormat";
 import {InvalidTokenError} from "jwt-decode";
 import {UserNotFoundError} from "../errors/UserNotFoundError";
@@ -29,22 +29,26 @@ export class UserService {
      * Registers a new user.
      * @param email The user's email.
      * @param password The user's password.
+     * @param token
      * @return The created user.
      */
-    public async register(email: string, password: string): Promise<User> {
+    public async register(email: string, password: string, token: string): Promise<User> {
         logger.logDebugFromEntity(`Attempting to register user with email: ${email}`, this.constructor);
 
+        await this.validateRegisterToken(token, email);
         await this.validateRegisterData(email, password);
-        password = this.encrypter.encryptString(password);
 
+        password = this.encrypter.encryptString(password);
         let user = new User(email, password);
         user = await this.userRepository.save(user);
 
-        logger.logDebugFromEntity(`Attempt to register user with email ${email} was successful. Sending email for register confirmation...`, this.constructor);
-        //TODO Send email for register confirmation
-        logger.logDebugFromEntity(`Email sent for register confirmation to user with email ${email}.`, this.constructor);
-
+        logger.logDebugFromEntity(`User with email: ${email} registered successfully.`, this.constructor);
         return user;
+    }
+
+    private async validateRegisterToken(token: string, email: string){
+        const tokenEmail = await Helpers.getDataFromToken(token, "email", JWT_INVITATION_SECRET as string);
+        if(tokenEmail !== email) throw new InvalidRegisterCredentialsError("Email does not match the token.");
     }
 
     /**
@@ -82,6 +86,7 @@ export class UserService {
      * @returns The user with the given email, or null if no user was found.
      */
     public async getByEmail(email: string): Promise<User | null> {
+        // * Se indexo el campo email en la base de datos ya que se espera que hayan mas consultas por email que escrituras en la tabla.
         return this.userRepository.getByEmail(email);
     }
 
@@ -103,6 +108,23 @@ export class UserService {
         const token = Helpers.generateToken({userId: userId}, (JWT_NEW_PASSWORD as string), JWT_NEW_PASSWORD_EXPIRATION_TIME as string);
         logger.logDebugFromEntity("Password reset token generated successfully. Sending notification to user with email: " + email, this.constructor);
         return await this.twitSnapAPIs.sendResetPasswordNotification([email], token);
+    }
+
+    /**
+     * Invites an admin to register.
+     * @param email The email of the user to invite.
+     */
+    public async inviteUser(email: string): Promise<void> {
+        logger.logDebugFromEntity("Received request to invite user with email: " + email, this.constructor);
+
+        // ? Verificamos que el usuario no exista ya
+        if (await this.emailIsUsed(email)) throw new InvalidRegisterCredentialsError("There is already an existing user with given email.");
+        logger.logDebugFromEntity("Received email is not registered yet. Generating invitation token...", this.constructor);
+        const token = Helpers.generateToken({email: email}, (JWT_INVITATION_SECRET as string), JWT_INVITATION_EXPIRATION_TIME as string);
+
+        // ? Enviar notificación de invitación
+        logger.logDebugFromEntity("Invitation token generated successfully. Sending invitation to user with email: " + email, this.constructor);
+        return await this.twitSnapAPIs.sendAdminInvitationNotification([email], token);
     }
 
     /**

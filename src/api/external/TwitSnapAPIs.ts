@@ -7,6 +7,7 @@ import {ExternalServiceHTTPError} from "./ExternalServiceHTTPError";
 import {injectable} from "tsyringe";
 
 const RESET_PASSWORD_EVENT_TYPE = "reset-password";
+const ADMIN_INVITATION_EVENT_TYPE = "admin-invitation";
 
 @injectable()
 export class TwitSnapAPIs{
@@ -17,6 +18,57 @@ export class TwitSnapAPIs{
     }
 
     /**
+     * Sends an email notification to the specified destinations.
+     * @param {string[]} destinations - The email addresses to send the notification to.
+     * @param {string} type - The type of notification to send.
+     * @param {string} sender - The email address of the sender.
+     * @param {any} params - The parameters to include in the notification.
+     * @param {(e: any) => void} errorHandler - The error handler for the request.
+     * @throws {ExternalServiceHTTPError} If the external service returns an unexpected status code.
+     */
+    public sendEmailNotification = async (destinations: string[], type: string, sender: string, params: any, errorHandler: (e: any) => void): Promise<void> => {
+        const url = NOTIFICATIONS_MS_URI + SEND_NOTIFICATION_ENDPOINT_PATH;
+
+        const data = {
+            type: type,
+            params: params,
+            notifications: {
+                type: "email",
+                destinations: destinations,
+                sender: sender
+            }
+        }
+
+        await this.httpRequester.postToUrl(url, data, errorHandler);
+    }
+
+    public sendAdminInvitationNotification = async (destinations: string[], token: string): Promise<void> => {
+        await this.sendEmailNotification(destinations, ADMIN_INVITATION_EVENT_TYPE, "twitsnap.backoffice@gmail.com", {token: token}, this.sendAdminInvitationNotificationErrorHandler);
+    }
+
+    /**
+     * Only for operation: sendAdminInvitationNotificationErrorHandler
+     *
+     * @param e - The error object from the failed request.
+     * @throws {ExternalServiceHTTPError} If the external service returns an unexpected status code.
+     */
+    private sendAdminInvitationNotificationErrorHandler = (e: any): void => {
+        this.standardErrorHandler(e, this.sendAdminInvitationNotificationResponseStatusErrorHandler);
+    }
+
+    /**
+    * Only for operation: sendAdminInvitationNotificationErrorHandler
+    *
+    * Generates an error based on the response status for sending the admin invitation notification.
+     */
+    private sendAdminInvitationNotificationResponseStatusErrorHandler = (status: number): Error => {
+        switch (status) {
+            default:
+                return new ExternalServiceHTTPError(`sendAdminInvitationNotification API Call has failed with status ${status}.`);
+        }
+    }
+
+    /**
      * Sends a reset password notification to the user.
      * @param {string[]} destinations - The email addresses to send the notification to.
      * @param {string} token - The reset password token.
@@ -24,23 +76,7 @@ export class TwitSnapAPIs{
      */
 
     public sendResetPasswordNotification = async (destinations: string[], token: string): Promise<void> => {
-        const url = NOTIFICATIONS_MS_URI + SEND_NOTIFICATION_ENDPOINT_PATH;
-
-        const data = {
-            type: RESET_PASSWORD_EVENT_TYPE,
-            params: {
-                token: token
-            },
-            notifications: {
-                type: "email",
-                destinations: destinations,
-                sender: "grupo8memo2@gmail.com"
-            }
-        }
-
-        const errorHandler = this.sendResetPasswordNotificationErrorHandler;
-
-        await this.httpRequester.postToUrl(url, data, errorHandler);
+        await this.sendEmailNotification(destinations, RESET_PASSWORD_EVENT_TYPE, "twitsnap.backoffice@gmail.com", {token: token}, this.sendResetPasswordNotificationErrorHandler);
     }
 
 

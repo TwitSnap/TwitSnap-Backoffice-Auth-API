@@ -9,16 +9,21 @@ const requiredEnvVars = [
     "LOG_ERROR", "LOG_DEBUG", "LOG_INFO", "JWT_EXPIRATION_TIME",
     "JWT_NEW_PASSWORD", "JWT_NEW_PASSWORD_EXPIRATION_TIME",
     "NOTIFICATIONS_MS_URI", "SEND_NOTIFICATION_ENDPOINT_PATH",
+    "JWT_INVITATION_SECRET", "JWT_INVITATION_EXPIRATION_TIME",
 ];
 
 Helpers.validateEnvVarsList(requiredEnvVars);
 
 // ? Server config
 export const PORT = process.env.PORT;
+
+// ? JWT config
 export const JWT_EXPIRATION_TIME = process.env.JWT_EXPIRATION_TIME;
 export const JWT_SECRET = process.env.JWT_SECRET;
 export const JWT_NEW_PASSWORD = process.env.JWT_NEW_PASSWORD;
 export const JWT_NEW_PASSWORD_EXPIRATION_TIME = process.env.JWT_NEW_PASSWORD_EXPIRATION_TIME;
+export const JWT_INVITATION_SECRET = process.env.JWT_INVITATION_SECRET;
+export const JWT_INVITATION_EXPIRATION_TIME = process.env.JWT_INVITATION_EXPIRATION_TIME;
 
 // ? Logger config
 export const LOG_ROUTE = process.env.LOG_ROUTE;

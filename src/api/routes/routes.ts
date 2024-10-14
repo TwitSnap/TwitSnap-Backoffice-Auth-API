@@ -12,4 +12,6 @@ router.post("/v1/auth/password", userController.forgotPassword);                
 router.patch("/v1/auth/password", userController.updatePasswordWithToken);                              // ? Ruta de actualización de contraseña
 router.get("/v1/auth/resetPasswordToken/valid/:token", userController.resetPasswordTokenIsValid);       // ? Ruta de validación de token de reseteo de contraseña
 
+router.post("/v1/auth/invitation", PassportAuthService.authenticate, userController.inviteUser);         // ? Ruta de invitación de admin
+
 export default router;
