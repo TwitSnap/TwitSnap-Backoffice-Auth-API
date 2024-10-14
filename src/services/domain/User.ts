@@ -1,10 +1,10 @@
-import {Column, Entity, PrimaryGeneratedColumn, Unique} from "typeorm";
+import {Column, Entity, PrimaryColumn, Unique} from "typeorm";
 
 @Entity("User")
 @Unique(["email"])
 export class User {
-    @PrimaryGeneratedColumn("uuid")
-    public id: string;                  // ? Se mantiene publico para que typeorm pueda acceder a el.
+    @PrimaryColumn("uuid", { default: () => "uuid_generate_v4()" })
+    private id: string;                  // ? Se mantiene publico para que typeorm pueda acceder a el.
 
     @Column({ type: "varchar", nullable: false })
     private readonly email: string;
