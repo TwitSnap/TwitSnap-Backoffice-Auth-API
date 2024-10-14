@@ -6,6 +6,8 @@ import {logger} from "../../utils/container/container";
 import {ExternalServiceHTTPError} from "./ExternalServiceHTTPError";
 import {injectable} from "tsyringe";
 
+const RESET_PASSWORD_EVENT_TYPE = "reset-password";
+
 @injectable()
 export class TwitSnapAPIs{
     httpRequester: HttpRequester;
@@ -25,7 +27,7 @@ export class TwitSnapAPIs{
         const url = NOTIFICATIONS_MS_URI + SEND_NOTIFICATION_ENDPOINT_PATH;
 
         const data = {
-            type: "reset-password",
+            type: RESET_PASSWORD_EVENT_TYPE,
             params: {
                 token: token
             },

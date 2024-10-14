@@ -40,7 +40,10 @@ export class UserService {
         let user = new User(email, password);
         user = await this.userRepository.save(user);
 
-        logger.logDebugFromEntity(`Attempt to register user with email ${email} was successful`, this.constructor);
+        logger.logDebugFromEntity(`Attempt to register user with email ${email} was successful. Sending email for register confirmation...`, this.constructor);
+        //TODO Send email for register confirmation
+        logger.logDebugFromEntity(`Email sent for register confirmation to user with email ${email}.`, this.constructor);
+
         return user;
     }
 
