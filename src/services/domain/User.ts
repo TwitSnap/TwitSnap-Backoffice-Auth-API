@@ -4,7 +4,7 @@ import {Column, Entity, PrimaryGeneratedColumn, Unique} from "typeorm";
 @Unique(["email"])
 export class User {
     @PrimaryGeneratedColumn("uuid")
-    private id: string;
+    public id: string;                  // ? Se mantiene publico para que typeorm pueda acceder a el.
 
     @Column({ type: "varchar", nullable: false })
     private readonly email: string;
