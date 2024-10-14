@@ -16,6 +16,7 @@ Helpers.validateEnvVarsList(requiredEnvVars);
 
 // ? Server config
 export const PORT = process.env.PORT;
+export const MASTER_TOKEN = process.env.MASTER_TOKEN; // ! Es opcional. Sirve para registrar usuarios sin token de invitación
 
 // ? JWT config
 export const JWT_EXPIRATION_TIME = process.env.JWT_EXPIRATION_TIME;

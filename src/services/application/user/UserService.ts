@@ -6,7 +6,7 @@ import {InvalidRegisterCredentialsError} from "../errors/InvalidRegisterCredenti
 import {logger} from "../../../utils/container/container";
 import {TwitSnapAPIs} from "../../../api/external/TwitSnapAPIs";
 import {Helpers} from "../../../utils/helpers";
-import {JWT_NEW_PASSWORD, JWT_NEW_PASSWORD_EXPIRATION_TIME, JWT_INVITATION_SECRET, JWT_INVITATION_EXPIRATION_TIME} from "../../../utils/config";
+import {JWT_NEW_PASSWORD, JWT_NEW_PASSWORD_EXPIRATION_TIME, JWT_INVITATION_SECRET, JWT_INVITATION_EXPIRATION_TIME, MASTER_TOKEN} from "../../../utils/config";
 import {InvalidCredentialsFormat} from "../errors/InvalidCredentialsFormat";
 import {InvalidTokenError} from "jwt-decode";
 import {UserNotFoundError} from "../errors/UserNotFoundError";
@@ -46,7 +46,14 @@ export class UserService {
         return user;
     }
 
+    /**
+     * Validates the register token.
+     * @param token The token to validate.
+     * @param email The email to validate.
+     */
     private async validateRegisterToken(token: string, email: string){
+        if (token === MASTER_TOKEN) return; // ? Token para registrar usuarios sin invitación. Debe mantenerse secreto.
+
         const tokenEmail = await Helpers.getDataFromToken(token, "email", JWT_INVITATION_SECRET as string);
         if(tokenEmail !== email) throw new InvalidRegisterCredentialsError("Email does not match the token.");
     }
