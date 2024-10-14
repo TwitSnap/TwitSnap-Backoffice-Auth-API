@@ -13,7 +13,7 @@ import {PassportAuthService} from "./services/application/session/PassportAuthSe
 const app = express();
 const passport = PassportAuthService.getPassport();
 
-app.use(cors());
+//app.use(cors());
 app.use(express.json());
 app.use(router)
 app.use(errorMiddleware);
