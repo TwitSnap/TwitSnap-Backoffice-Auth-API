@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import express from "express";
 import router from "./api/routes/routes";
-import cors from 'cors';
 import {errorMiddleware} from "./api/errors/handling/ErrorHandler";
 import {databaseConnector} from "./utils/container/container";
 import {logger} from "./utils/container/container";
