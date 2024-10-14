@@ -1,6 +1,6 @@
 import {JWT_SECRET} from "../../../utils/config";
 import {JwtFromRequestFunction, Strategy as JwtStrategy, StrategyOptions} from 'passport-jwt';
-import {userService} from "../../../utils/container/container";
+import {logger, userService} from "../../../utils/container/container";
 import passport from "passport";
 import {NextFunction, Request, Response} from "express";
 
@@ -50,7 +50,12 @@ export class PassportAuthService {
         try {
             const user = await userService.getUserById(payload.userId);
 
-            if (user) return done(null, user);
+            if (user) {
+                logger.logDebugFromEntity(`User with id: ${user.getId()} authenticated successfully.`, PassportAuthService);
+                return done(null, user);
+            }
+
+            logger.logErrorFromEntity(`User with id: ${payload.userId} not found. Authentication failed.`, PassportAuthService);
             return done(null, false);
         } catch (error) {
             return done(error, false);
